@@ -1,12 +1,15 @@
 package com.vinay.shoppinglist
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,7 +64,22 @@ fun ShoppingApp() {
                 .padding(16.dp)
         ) {
             items(sItems) {
-                ShoppingListItem(item = it, {}, {})
+                item ->
+                if (item.isEditing) {
+                    ShoppingItemEditor(item = item, onEditingComplete = {
+                        editedName, editedQuantity ->
+                        sItems = sItems.map { it.copy(isEditing = false) }
+                        val editedItem = sItems.find { it.id == item.id }
+                        editedItem?.let {
+                            it.name = editedName
+                            it.quantity = editedQuantity
+                        }
+                    })
+                } else {
+                    ShoppingListItem(item = item, onEdit = {
+                        sItems = sItems.map { it.copy(isEditing = it.id == item.id) }
+                    }, {})
+                }
             }
         }
     }
@@ -118,16 +136,34 @@ fun ShoppingApp() {
 
 
 @Composable
-fun ShoppinItemEditor (item: ShoppingItem, onEditingComplete: (String, Int) -> Unit) {
-    var editedName by remember {
-        mutableStateOf(item.name)
+fun ShoppingItemEditor (item: ShoppingItem, onEditingComplete: (String, Int) -> Unit) {
+    var editedName by remember { mutableStateOf(item.name) }
+    var editedQuantity by remember { mutableStateOf(item.quantity.toString()) }
+    var isEditing by remember { mutableStateOf(item.isEditing) }
+
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    )  {
+        Column {
+            OutlinedTextField(value = editedName, onValueChange = { editedName = it })
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(value = editedQuantity, onValueChange = { editedQuantity = it },
+                singleLine = true)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                isEditing = false
+                onEditingComplete(editedName, editedQuantity.toIntOrNull() ?: 1)
+            }) {
+                Text(text = "Save")
+            }
+        }
     }
-    var editedQuantity by remember {
-        mutableStateOf(item.quantity.toString())
-    }
-    var isEditing by remember {
-        mutableStateOf(item.isEditing)
-    }
+
+
+
 }
 
 
