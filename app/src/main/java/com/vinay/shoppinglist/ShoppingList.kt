@@ -78,7 +78,9 @@ fun ShoppingApp() {
                 } else {
                     ShoppingListItem(item = item, onEdit = {
                         sItems = sItems.map { it.copy(isEditing = it.id == item.id) }
-                    }, {})
+                    }, onDelete = {
+                        sItems = sItems - item
+                    })
                 }
             }
         }
@@ -161,9 +163,6 @@ fun ShoppingItemEditor (item: ShoppingItem, onEditingComplete: (String, Int) -> 
             }
         }
     }
-
-
-
 }
 
 
